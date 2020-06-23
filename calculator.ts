@@ -215,8 +215,8 @@ class Parser {
 }
 
 class NodeVisitor {
-  visit(node: AST): number {
-    const methodName = 'visit' + node.constructor.name
+  visit(node: AST) {
+    const methodName = `visit${node.constructor.name}`
     const visitor: VisitFunc = this[methodName] || this.genericVisit
     return visitor.call(this, node)
   }
@@ -250,6 +250,27 @@ class Interpreter extends NodeVisitor {
   }
 
   interpret(): number {
+    const tree = this.parser.parse()
+    return this.visit(tree)
+  }
+}
+
+class RPNInterpreter extends NodeVisitor {
+  private parser: Parser
+  constructor(parser: Parser) {
+    super()
+    this.parser = parser
+  }
+
+  visitBinOp(node: BinOp): string {
+    return `${this.visit(node.left)} ${this.visit(node.right)} ${node.op.value}`
+  }
+
+  visitNum(node: Num): string {
+    return String(node.value)
+  }
+
+  interpret(): string {
     const tree = this.parser.parse()
     return this.visit(tree)
   }
