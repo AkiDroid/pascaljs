@@ -1,13 +1,19 @@
 module.exports = {
   env: {
     browser: true,
-    commonjs: true,
     es2020: true
   },
-  extends: ['standard'],
+  extends: [
+    'standard'
+  ],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 11
+    ecmaVersion: 11,
+    sourceType: 'module'
   },
+  plugins: [
+    '@typescript-eslint'
+  ],
   rules: {
     'space-before-function-paren': [
       'error',
@@ -17,5 +23,14 @@ module.exports = {
         anonymous: 'always'
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ['*.ts'],
+      rules: {
+        'no-dupe-class-members': 'off',
+        'no-unused-vars': 'off'
+      }
+    }
+  ]
 }
