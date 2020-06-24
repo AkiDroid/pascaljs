@@ -4,12 +4,12 @@ import { Interpreter } from './src/interpreter'
 
 const text = `
 BEGIN
+
     BEGIN
-        number := 2;
-        a := number;
-        b := 10 * a + 10 * number / 4;
-        c := a - - b
-    END;
+      a := 10 / 3;
+      b := 10 diV 3;
+    end;
+
     x := 11;
 END.
 `

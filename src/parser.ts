@@ -5,7 +5,6 @@ export interface VisitFunc {
   (ast: AST): number | never
 }
 
-
 export abstract class AST {}
 
 export class BinOp extends AST {
@@ -196,13 +195,19 @@ export class Parser {
   }
 
   term(): UnaryOp|Num|Var|BinOp {
+    // term : factor ((MUL | INTEGER_DIV | FLOAT_DIV) factor)*
     let node = this.factor()
-    while (([TokenType.MUL, TokenType.DIV].indexOf(this.currentToken.type) >= 0)) {
+    while (([
+      TokenType.MUL,
+      TokenType.INTEGER_DIV,
+      TokenType.FLOAT_DIV].indexOf(this.currentToken.type) >= 0)) {
       const token = this.currentToken
       if (token.type === TokenType.MUL) {
         this.eat(TokenType.MUL)
-      } else if (token.type === TokenType.DIV) {
-        this.eat(TokenType.DIV)
+      } else if (token.type === TokenType.INTEGER_DIV) {
+        this.eat(TokenType.INTEGER_DIV)
+      } else if (token.type === TokenType.FLOAT_DIV) {
+        this.eat(TokenType.FLOAT_DIV)
       }
       node = new BinOp(node, token, this.factor())
     }

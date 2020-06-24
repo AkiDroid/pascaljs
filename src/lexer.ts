@@ -3,12 +3,16 @@ function isAlpha(c: string) {
   return (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
 }
 
+function isUnderscore(c: string) {
+  return c === '_'
+}
+
 function isDigit(c: string) {
   return ((c >= '0') && (c <= '9'))
 }
 
 function isAlnum(c: string) {
-  return (isAlpha(c) || isDigit(c))
+  return (isAlpha(c) || isDigit(c) || isUnderscore(c))
 }
 
 function isSpace(char: string): boolean {
@@ -20,7 +24,8 @@ export enum TokenType {
   PLUS = 'PLUS',
   MINUS = 'MINUS',
   MUL = 'MULTIPLY',
-  DIV = 'DIVIDE',
+  INTEGER_DIV = 'INTEGER_DIV',
+  FLOAT_DIV = 'FLOAT_DIV',
   LPAREN= 'LPAREN',
   RPAREN = 'RPAREN',
   ID = 'ID',
@@ -49,7 +54,8 @@ export class Token {
 
 const RESERVED_KEYWORDS = {
   BEGIN: new Token(TokenType.BEGIN, 'BEGIN'),
-  END: new Token(TokenType.END, 'END')
+  END: new Token(TokenType.END, 'END'),
+  DIV: new Token(TokenType.INTEGER_DIV, 'DIV')
 }
 
 export class Lexer {
@@ -105,7 +111,7 @@ export class Lexer {
       result += this.currentChar
       this.advance()
     }
-    const token = RESERVED_KEYWORDS[result] || new Token(TokenType.ID, result)
+    const token = RESERVED_KEYWORDS[result.toUpperCase()] || new Token(TokenType.ID, result.toLowerCase())
     return token
   }
 
@@ -120,7 +126,7 @@ export class Lexer {
         return new Token(TokenType.INTEGER, this.integer())
       }
 
-      if (isAlpha(this.currentChar)) {
+      if (isAlpha(this.currentChar) || isUnderscore(this.currentChar)) {
         return this._id()
       }
 
@@ -157,7 +163,7 @@ export class Lexer {
 
       if (this.currentChar === '/') {
         this.advance()
-        return new Token(TokenType.DIV, '/')
+        return new Token(TokenType.FLOAT_DIV, 'DIV')
       }
 
       if (this.currentChar === '(') {

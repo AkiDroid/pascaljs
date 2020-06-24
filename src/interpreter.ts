@@ -62,8 +62,10 @@ export class Interpreter extends NodeVisitor {
       return this.visit(node.left) - this.visit(node.right)
     } else if (node.op.type === TokenType.MUL) {
       return this.visit(node.left) * this.visit(node.right)
-    } else if (node.op.type === TokenType.DIV) {
+    } else if (node.op.type === TokenType.FLOAT_DIV) {
       return this.visit(node.left) / this.visit(node.right)
+    } else if (node.op.type === TokenType.INTEGER_DIV) {
+      return Math.floor(this.visit(node.left) / this.visit(node.right))
     }
   }
 
