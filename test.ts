@@ -1,22 +1,21 @@
-interface IBox {    
-    x : number;
-    y : number;
-    height : number;
-    width : number;
-}
+import { Lexer } from './src/lexer'
+import { Parser } from './src/parser'
+import { Interpreter } from './src/interpreter'
 
-class Box {
-    public x: number;
-    public y: number;
-    public height: number;
-    public width: number;
+const text = `
+BEGIN
+    BEGIN
+        number := 2;
+        a := number;
+        b := 10 * a + 10 * number / 4;
+        c := a - - b
+    END;
+    x := 11;
+END.
+`
 
-    constructor();
-    constructor(obj: IBox); 
-    constructor(obj?: any) {    
-        this.x = obj && obj.x || 0
-        this.y = obj && obj.y || 0
-        this.height = obj && obj.height || 0
-        this.width = obj && obj.width || 0;
-    }   
-}
+const lexer = new Lexer(text)
+const parser = new Parser(lexer)
+const interpreter = new Interpreter(parser)
+interpreter.interpret()
+console.log(interpreter.GLOBAL_SCOPE)

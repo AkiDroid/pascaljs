@@ -1,6 +1,13 @@
 
-import { AST, Parser, VisitFunc, BinOp, UnaryOp, Num } from './parser'
+import {
+  AST, Parser, VisitFunc, BinOp, UnaryOp, Num, Compound, Assign,
+  Var, NoOp
+} from './parser'
 import { TokenType } from './lexer'
+
+interface GlobalScope {
+  [index: string]: number
+}
 
 class NodeVisitor {
   visit(node: AST) {
@@ -16,9 +23,36 @@ class NodeVisitor {
 
 export class Interpreter extends NodeVisitor {
   private parser: Parser
+  readonly GLOBAL_SCOPE: GlobalScope
   constructor(parser: Parser) {
     super()
     this.parser = parser
+    this.GLOBAL_SCOPE = {}
+  }
+
+  visitCompound(node: Compound): void {
+    for (const child of node.children) {
+      this.visit(child)
+    }
+  }
+
+  visitNoOp() {
+
+  }
+
+  visitAssign(node: Assign) {
+    const varName = node.left.value
+    this.GLOBAL_SCOPE[varName] = this.visit(node.right)
+  }
+
+  visitVar(node: Var): number {
+    const varName = node.value
+    const val = this.GLOBAL_SCOPE[varName]
+    if (val === undefined) {
+      throw Error(`NameError: ${varName}`)
+    } else {
+      return val
+    }
   }
 
   visitBinOp(node: BinOp): number {
