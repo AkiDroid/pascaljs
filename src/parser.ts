@@ -323,7 +323,7 @@ export class Parser {
     return node
   }
 
-  parse(): Compound {
+  parse(): Program {
     const node = this.program()
     if (this.currentToken.type !== TokenType.EOF) {
       this.error()
