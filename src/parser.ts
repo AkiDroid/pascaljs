@@ -7,9 +7,34 @@ export interface VisitFunc {
 
 export abstract class AST {}
 
+export class Program extends AST {
+  constructor(readonly name: Var, readonly block: Block) {
+    super()
+  }
+}
+
+export class Block extends AST {
+  constructor(readonly declarations: VarDecl[], readonly compoundStatement: Compound) {
+    super()
+  }
+}
+
+export class VarDecl extends AST {
+  constructor(readonly varNode: Var, readonly typeNode: Type) {
+    super()
+  }
+}
+
+export class Type extends AST {
+  readonly value: string
+  constructor(readonly token: Token) {
+    super()
+  }
+}
+
 export class BinOp extends AST {
   private token: Token
-  constructor(readonly left: AST, readonly op: Token, readonly right: AST) {
+  constructor(readonly left: UnaryOp|Num|Var|BinOp, readonly op: Token, readonly right: UnaryOp|Num|Var|BinOp) {
     super()
     this.token = op
   }
@@ -17,7 +42,7 @@ export class BinOp extends AST {
 
 export class UnaryOp extends AST {
   private token: Token
-  constructor(readonly op: Token, readonly expr: AST) {
+  constructor(readonly op: Token, readonly expr: UnaryOp|Num|Var|BinOp) {
     super()
     this.token = op
   }
@@ -43,7 +68,7 @@ export class Compound extends AST {
 
 export class Assign extends AST {
   token: Token
-  constructor(readonly left: Var, op: Token, readonly right: AST) {
+  constructor(readonly left: Var, op: Token, readonly right: UnaryOp|Num|Var|BinOp) {
     super()
   }
 }
@@ -81,10 +106,76 @@ export class Parser {
     }
   }
 
-  program(): Compound {
-    // program : compoundStatement DOT
-    const node = this.compoundStatement()
+  program(): Program {
+    // program : PROGRAM variable SEMI block DOT
+    this.eat(TokenType.PROGRAM)
+    const varNode = this.variable()
+    this.eat(TokenType.SEMI)
+    const blockNode = this.block()
+    const node = new Program(varNode, blockNode)
     this.eat(TokenType.DOT)
+    return node
+  }
+
+  block(): Block {
+    // block : declarations compound_statement
+    const declarationNodes = this.declarations()
+    const compoundStatementNode = this.compoundStatement()
+    const node = new Block(declarationNodes, compoundStatementNode)
+    return node
+  }
+
+  declarations(): VarDecl[] {
+    /*
+    declarations : VAR (variable_declaration SEMI)+
+                 | empty
+    */
+    let declarations = []
+    const token = this.currentToken
+    if (token.type === TokenType.VAR) {
+      this.eat(TokenType.VAR)
+      while (this.currentToken.type === TokenType.ID) {
+        const varDecl = this.variableDeclaration()
+        declarations = declarations.concat(varDecl)
+        this.eat(TokenType.SEMI)
+      }
+    }
+
+    return declarations
+  }
+
+  variableDeclaration(): VarDecl[] {
+    // variable_declaration : ID (COMMA ID)* COLON type_spec
+    const varNodes = [new Var(this.currentToken)]
+    this.eat(TokenType.ID)
+    while (this.currentToken.type === TokenType.COMMA) {
+      this.eat(TokenType.COMMA)
+      varNodes.push(new Var(this.currentToken))
+      this.eat(TokenType.ID)
+    }
+    this.eat(TokenType.COLON)
+
+    const typeNode = this.typeSpec()
+
+    const varDeclarations: VarDecl[] = []
+    for (const varNode of varNodes) {
+      varDeclarations.push(new VarDecl(varNode, typeNode))
+    }
+    return varDeclarations
+  }
+
+  typeSpec(): Type {
+    /*
+    type_spec : INTEGER
+              | REAL
+    */
+    const token = this.currentToken
+    if (this.currentToken.type === TokenType.INTEGER) {
+      this.eat(TokenType.INTEGER)
+    } else {
+      this.eat(TokenType.REAL)
+    }
+    const node = new Type(token)
     return node
   }
 
@@ -169,7 +260,8 @@ export class Parser {
     /*
     factor : PLUS  factor
           | MINUS factor
-          | INTEGER
+          | INTEGER_CONST
+          | REAL_CONST
           | LPAREN expr RPAREN
           | variable
     */
@@ -180,8 +272,11 @@ export class Parser {
     } else if (token.type === TokenType.MINUS) {
       this.eat(TokenType.MINUS)
       return new UnaryOp(token, this.factor())
-    } else if (token.type === TokenType.INTEGER) {
-      this.eat(TokenType.INTEGER)
+    } else if (token.type === TokenType.INTEGER_CONST) {
+      this.eat(TokenType.INTEGER_CONST)
+      return new Num(token)
+    } else if (token.type === TokenType.REAL_CONST) {
+      this.eat(TokenType.REAL_CONST)
       return new Num(token)
     } else if (token.type === TokenType.LPAREN) {
       this.eat(TokenType.LPAREN)

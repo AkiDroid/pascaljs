@@ -20,7 +20,12 @@ function isSpace(char: string): boolean {
 }
 
 export enum TokenType {
+  PROGRAM = 'PROGRAM',
+  VAR = 'VAR',
   INTEGER = 'INTEGER',
+  REAL = 'REAL',
+  INTEGER_CONST = 'INTEGER_CONST',
+  REAL_CONST = 'REAL_CONST',
   PLUS = 'PLUS',
   MINUS = 'MINUS',
   MUL = 'MULTIPLY',
@@ -34,6 +39,8 @@ export enum TokenType {
   DOT = 'DOT',
   BEGIN = 'BEGIN',
   END = 'END',
+  COLON = 'COLON',
+  COMMA = 'COMMA',
   EOF = 'EOF',
 }
 
@@ -53,6 +60,10 @@ export class Token {
 }
 
 const RESERVED_KEYWORDS = {
+  PROGRAM: new Token(TokenType.PROGRAM, 'PROGRAM'),
+  VAR: new Token(TokenType.VAR, 'VAR'),
+  INTEGER: new Token(TokenType.INTEGER, 'INTEGER'),
+  REAL: new Token(TokenType.REAL, 'REAL'),
   BEGIN: new Token(TokenType.BEGIN, 'BEGIN'),
   END: new Token(TokenType.END, 'END'),
   DIV: new Token(TokenType.INTEGER_DIV, 'DIV')
@@ -69,7 +80,7 @@ export class Lexer {
   }
 
   error() {
-    throw Error('Invalid character')
+    throw Error(`Invalid character: ${this.currentChar}`)
   }
 
   advance() {
@@ -96,16 +107,37 @@ export class Lexer {
     }
   }
 
-  integer(): number {
+  skipComment() {
+    while (this.currentChar !== '}') {
+      this.advance()
+    }
+    this.advance()
+  }
+
+  number(): Token {
     let result = ''
+    let token: Token
+
     while (this.currentChar && isDigit(this.currentChar)) {
       result += this.currentChar
       this.advance()
     }
-    return parseInt(result)
+
+    if (this.currentChar === '.') {
+      result += this.currentChar
+      this.advance()
+      while (this.currentChar && isDigit(this.currentChar)) {
+        result += this.currentChar
+        this.advance()
+      }
+      token = new Token(TokenType.REAL_CONST, parseFloat(result))
+    } else {
+      token = new Token(TokenType.INTEGER_CONST, parseInt(result))
+    }
+    return token
   }
 
-  _id() {
+  _id(): Token {
     let result = ''
     while (this.currentChar && isAlnum(this.currentChar)) {
       result += this.currentChar
@@ -115,7 +147,7 @@ export class Lexer {
     return token
   }
 
-  getNextToken() {
+  getNextToken(): Token {
     while (this.currentChar) {
       if (isSpace(this.currentChar)) {
         this.skipWhitespace()
@@ -123,17 +155,33 @@ export class Lexer {
       }
 
       if (isDigit(this.currentChar)) {
-        return new Token(TokenType.INTEGER, this.integer())
+        return this.number()
       }
 
       if (isAlpha(this.currentChar) || isUnderscore(this.currentChar)) {
         return this._id()
       }
 
+      if (this.currentChar === '{') {
+        this.advance()
+        this.skipComment()
+        continue
+      }
+
+      if (this.currentChar === ',') {
+        this.advance()
+        return new Token(TokenType.COMMA, ',')
+      }
+
       if (this.currentChar === ':' && this.peek() === '=') {
         this.advance()
         this.advance()
         return new Token(TokenType.ASSIGN, ':=')
+      }
+
+      if (this.currentChar === ':') {
+        this.advance()
+        return new Token(TokenType.COLON, ':')
       }
 
       if (this.currentChar === ';') {

@@ -1,7 +1,7 @@
 
 import {
   AST, Parser, VisitFunc, BinOp, UnaryOp, Num, Compound, Assign,
-  Var, NoOp
+  Var, NoOp, Program, Block, Type, VarDecl
 } from './parser'
 import { TokenType } from './lexer'
 
@@ -28,6 +28,25 @@ export class Interpreter extends NodeVisitor {
     super()
     this.parser = parser
     this.GLOBAL_SCOPE = {}
+  }
+
+  visitProgram(node: Program) {
+    this.visit(node.block)
+  }
+
+  visitBlock(node: Block) {
+    for (const declaration of node.declarations) {
+      this.visit(declaration)
+    }
+    this.visit(node.compoundStatement)
+  }
+
+  visitVarDecl(node: VarDecl) {
+
+  }
+
+  visitType(node: Type) {
+
   }
 
   visitCompound(node: Compound): void {
