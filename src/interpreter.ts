@@ -1,8 +1,9 @@
 
 import {
-  AST, Parser, VisitFunc, BinOp, UnaryOp, Num, Compound, Assign,
-  Var, NoOp, Program, Block, Type, VarDecl
-} from './parser'
+  AST, BinOp, UnaryOp, Num, Compound, Assign,
+  Var, NoOp, Program, Block, Type, VarDecl, ProcedureDecl
+} from './ast'
+import { Parser, VisitFunc } from './parser'
 import { TokenType } from './lexer'
 
 interface GlobalScope {
@@ -86,6 +87,10 @@ export class Interpreter extends NodeVisitor {
     } else if (node.op.type === TokenType.INTEGER_DIV) {
       return Math.floor(this.visit(node.left) / this.visit(node.right))
     }
+  }
+
+  visitProcedureDecl(node: ProcedureDecl) {
+
   }
 
   visitUnaryOp(node: UnaryOp): number {

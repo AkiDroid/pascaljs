@@ -41,6 +41,7 @@ export enum TokenType {
   END = 'END',
   COLON = 'COLON',
   COMMA = 'COMMA',
+  PROCEDURE = 'PROCEDURE',
   EOF = 'EOF',
 }
 
@@ -66,7 +67,8 @@ const RESERVED_KEYWORDS = {
   REAL: new Token(TokenType.REAL, 'REAL'),
   BEGIN: new Token(TokenType.BEGIN, 'BEGIN'),
   END: new Token(TokenType.END, 'END'),
-  DIV: new Token(TokenType.INTEGER_DIV, 'DIV')
+  DIV: new Token(TokenType.INTEGER_DIV, 'DIV'),
+  PROCEDURE: new Token(TokenType.PROCEDURE, 'PROCEDURE')
 }
 
 export class Lexer {

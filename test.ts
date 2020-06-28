@@ -33,7 +33,17 @@ const interpreter = new Interpreter(parser)
 interpreter.interpret()
 console.log(interpreter.GLOBAL_SCOPE)
 
-const a = [1, 2, 3]
-const b = a.map((i) => {
-  return String(i + 1)
-})
+class Animal {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
+}
+
+class Dog extends Animal {
+  private category: string
+  constructor(name: string, category: string) {
+    super(name)
+    this.category = category
+  }
+}
