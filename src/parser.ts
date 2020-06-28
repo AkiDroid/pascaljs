@@ -9,6 +9,39 @@ export interface VisitFunc {
   (ast: AST): number | never
 }
 
+interface Symboldict {
+  [index: string]: Symbol
+}
+
+class Symbol {
+  name: string
+  type: TokenType
+  constructor(name: string, type: TokenType = null) {
+    this.name = name
+    this.type = type
+  }
+}
+
+class BuiltinTypeSymbol extends Symbol {
+  toString() {
+    return this.name
+  }
+}
+
+class VarSymbol extends Symbol {
+  toString() {
+    return this.name
+  }
+}
+
+class SymbolTable {
+  _symbols: Symboldict
+
+  insert(symbol: Symbol) {
+    this._symbols[symbol.name] = symbol
+  }
+}
+
 export class Parser {
   private lexer: Lexer
   private currentToken: Token
